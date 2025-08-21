@@ -75,12 +75,14 @@ end
 local function setTargetBuffsDisabled(disable)
   ReduceCoggyLoadDB.targetBuffsDisabled = disable and true or false
   if TargetFrame and TargetFrame.UpdateAuras then TargetFrame:UpdateAuras() end
+  if FocusFrame  and FocusFrame.UpdateAuras  then FocusFrame:UpdateAuras()  end
   chat("Target BUFFS: " .. (disable and "HIDDEN" or "VISIBLE"))
 end
 
 local function setTargetDebuffsDisabled(disable)
   ReduceCoggyLoadDB.targetDebuffsDisabled = disable and true or false
   if TargetFrame and TargetFrame.UpdateAuras then TargetFrame:UpdateAuras() end
+  if FocusFrame  and FocusFrame.UpdateAuras  then FocusFrame:UpdateAuras()  end
   chat("Target DEBUFFS: " .. (disable and "HIDDEN" or "VISIBLE"))
 end
 
@@ -94,6 +96,14 @@ end)
 
 -- Hook the target frame’s aura refresh so hide/show sticks
 hooksecurefunc(TargetFrame, "UpdateAuras", targetAurasHook) 
+
+-- Also hook the Focus frame once it exists
+local function tryHookFocus()
+  if FocusFrame and FocusFrame.UpdateAuras and not FocusFrame.__RCL_AurasHooked then
+    hooksecurefunc(FocusFrame, "UpdateAuras", targetAurasHook)
+    FocusFrame.__RCL_AurasHooked = true
+  end
+end
 
 -- =====================================
 -- Apply everything from DB
@@ -296,6 +306,7 @@ end
 local f = CreateFrame("Frame")
 f:RegisterEvent("ADDON_LOADED")
 f:RegisterEvent("PLAYER_LOGIN")
+f:RegisterEvent("PLAYER_FOCUS_CHANGED")
 f:SetScript("OnEvent", function(_, event, arg1)
   if event == "ADDON_LOADED" and arg1 == ADDON_NAME then
     migrateAndSeed()
@@ -304,5 +315,9 @@ f:SetScript("OnEvent", function(_, event, arg1)
     SlashCmdList.REDUCECOGGYLOAD = handleSlash
   elseif event == "PLAYER_LOGIN" then
     applyAllFromDB()
+    tryHookFocus()
+  elseif event == "PLAYER_FOCUS_CHANGED" then
+    tryHookFocus()
+    if FocusFrame and FocusFrame.UpdateAuras then FocusFrame:UpdateAuras() end
   end
 end)
