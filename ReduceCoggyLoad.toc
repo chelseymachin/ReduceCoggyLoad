@@ -1,0 +1,8 @@
+## Interface: 110005
+## Title: ReduceCoggyLoad
+## Author: ltleftboob
+## Version: 0.1.0
+## Notes: Toggle floating combat text (damage + healing)
+## SavedVariables: ReduceCoggyLoadDB
+
+ReduceCoggyLoad.lua
